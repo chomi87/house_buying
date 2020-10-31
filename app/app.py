@@ -1,6 +1,4 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 from src import compute_df, buy_price_ui, liquidity_selling_ui, format_time_plot
@@ -20,7 +18,11 @@ def main():
         st.sidebar.success('To continue select "Run the app".')
     elif app_mode == "Show the source code":
         readme_text.empty()
+        st.markdown("## app.py code")
         st.code(get_file_content_as_a_string("app/app.py"))
+
+        st.markdown("## src.py code")
+        st.code(get_file_content_as_a_string("app/src.py"))
     elif app_mode == "Run the app":
         readme_text.empty()
         run_the_app()
@@ -116,9 +118,6 @@ def run_the_app():
     st.plotly_chart(fig3, use_container_width=True)
 
     ### Situation at out
-
-    # Compute when you break even: when selling the house you get back your costs
-
     liquidity_selling_ui(df, downpayment, fixed)
 
 
