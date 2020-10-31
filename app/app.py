@@ -21,7 +21,7 @@ st.sidebar.text("Monthly payment: %.2f €" %monthly_payment)
 
 months = np.arange(0, duration_mnts, 1)
 payments = monthly_payment * np.ones(duration_mnts)
-principal
+
 
 df = pd.DataFrame({"months" : months, "monthly payment" : payments})
 df.loc[:, 'cumulative payment'] = df.loc[:, "monthly payment"].cumsum()
