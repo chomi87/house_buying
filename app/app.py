@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.figure_factory as ff
+import plotly.express as px
 import numpy as np
 
 
@@ -20,11 +21,15 @@ st.sidebar.text("Monthly payment: %.2f €" %monthly_payment)
 
 months = np.arange(0, duration_mnts, 1)
 payments = monthly_payment * np.ones(duration_mnts)
+principal
 
 df = pd.DataFrame({"months" : months, "monthly payment" : payments})
 df.loc[:, 'cumulative payment'] = df.loc[:, "monthly payment"].cumsum()
 
 
-st.line_chart(df, use_container_width=True)
+fig = px.line(df, x="months", y=["cumulative payment", "monthly payment"], title='Life expectancy in Canada')
+
+st.plotly_chart(fig, use_container_width=True)
+
 
 df
