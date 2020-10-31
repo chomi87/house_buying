@@ -52,8 +52,8 @@ downpayment = buying_price - mortgage_value
 st.sidebar.text("Down payment: {}".format(downpayment))
 
 fixed = st.sidebar.number_input(
-    "Fixed expenses (notary, taxes, ...)",
-    value=int(mortgage_value * 0.1),
+    "Fixed expenses (notary, taxes, ...) - estimate at 10% of the price",
+    value=int(buying_price * 0.1),
     min_value=0,
     max_value=50000,
 )
@@ -87,13 +87,9 @@ rent = st.sidebar.number_input("Saved from rent", 0.0, 10000.0, monthly_payment)
 # prepare dataframe
 df = compute_df(mortgage_value, duration_mnts, monthly_payment, interest_rate / 12)
 df.loc[:, "saved rent"] = df.loc[:, "month"] * rent
-df.loc[:, "Net balance when selling"] = (
+df.loc[:, "Sales balance"] = (
     sale_value
     - df.loc[:, "residual"]
-    + df.loc[:, "saved rent"]
-    - df.loc[:, "cumulative payment"]
-    - downpayment
-    - fixed
 )
 
 # figures
@@ -157,11 +153,34 @@ fig3.update_traces(
 st.plotly_chart(fig3, use_container_width=True)
 
 ### Situation at out
+
+#Compute when you break even: when selling the house you get back your costs
+break_even = df.loc[df["Sales balance"].gt(downpayment + fixed).idxmax(), "month"]
+at_loss = df["Sales balance"] < (downpayment + fixed)
+at_gain = df["Sales balance"] > (downpayment + fixed)
+
+#include savings from non paid rent and cost from paid mortgage
+df.loc[:, "Rent mortgage cumdif"] = - df.loc[:,"cumulative payment"] + df.loc[:, "saved rent"]
+df.loc[:, "Sales balance incl monthly"] = df["Sales balance"] + df.loc[:, "Rent mortgage cumdif"]
+at_loss_incl_monthly = df["Sales balance incl monthly"] < (downpayment + fixed)
+at_gain_incl_monhtly = df["Sales balance incl monthly"] > (downpayment + fixed)
+
 fig4 = go.Figure(
-    layout={"title": "Cash when selling the house (>0 is good)"},
+    layout={"title": "Liquidity when selling the house"},
 )
 fig4.add_trace(
-    go.Scatter(x=df["month"], y=df["Net balance when selling"], name="Balance")
+    go.Scatter(x=df[at_gain]["month"], y=df[at_gain]["Sales balance"], fill="tozeroy", name="At gain")
+)
+fig4.add_trace(
+    go.Scatter(x=df[at_loss]["month"], y=df[at_loss]["Sales balance"], fill="tozeroy", name="At loss")
+)
+fig4.add_trace(
+    go.Scatter(x=df.loc[:,"month"], y=np.ones(len(df))*(downpayment+fixed), name="Costs + Downpayment")
+)
+
+
+fig4.add_trace(
+    go.Scatter(x=df.loc[:,"month"], y=df["Sales balance incl monthly"], name="Incl rent and repayment")
 )
 
 fig4.update_layout(
@@ -171,7 +190,13 @@ fig4.update_layout(
         ticktext = x_ticks_text
     ),
     xaxis_title="Years"
-
 )
+
+fig4.add_annotation(x=break_even, y=downpayment + fixed,
+            text="Break even at month {}".format(break_even),
+            showarrow=True,
+            arrowhead=1,
+            yshift=10)
+
 
 st.plotly_chart(fig4, use_container_width=True)
