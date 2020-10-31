@@ -62,8 +62,14 @@ def run_the_app():
     rent = st.sidebar.number_input("Saved from rent", 0.0, 10000.0, monthly_payment)
 
     # prepare dataframe
-    df = compute_df(mortgage_value, duration_mnts, monthly_payment, interest_rate / 12, rent, sale_value)
-
+    df = compute_df(
+        mortgage_value,
+        duration_mnts,
+        monthly_payment,
+        interest_rate / 12,
+        rent,
+        sale_value,
+    )
 
     # figures
     ### Residual
@@ -114,9 +120,6 @@ def run_the_app():
     # Compute when you break even: when selling the house you get back your costs
 
     liquidity_selling_ui(df, downpayment, fixed)
-
-
-
 
 
 if __name__ == "__main__":

@@ -4,7 +4,15 @@ import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 
-def compute_df(principal: float, duration: int, payment: float, ir_monthly: float, rent: float, sale_value: int):
+
+def compute_df(
+    principal: float,
+    duration: int,
+    payment: float,
+    ir_monthly: float,
+    rent: float,
+    sale_value: int,
+):
     """
     Prepares dataframe given the parameters
     :param principal: mortgage value
@@ -37,10 +45,10 @@ def compute_df(principal: float, duration: int, payment: float, ir_monthly: floa
 
     # include savings from non paid rent and cost from paid mortgage
     df.loc[:, "Rent mortgage cumdif"] = (
-            -df.loc[:, "cumulative payment"] + df.loc[:, "saved rent"]
+        -df.loc[:, "cumulative payment"] + df.loc[:, "saved rent"]
     )
     df.loc[:, "Sales balance incl monthly"] = (
-            df["Sales balance"] + df.loc[:, "Rent mortgage cumdif"]
+        df["Sales balance"] + df.loc[:, "Rent mortgage cumdif"]
     )
 
     return df
@@ -69,13 +77,15 @@ def buy_price_ui():
     )
     st.sidebar.text("Required liquidity: {}".format(downpayment + fixed))
 
-    return buy_price, mortgage_pct, mortgage_value, downpayment,fixed
-
+    return buy_price, mortgage_pct, mortgage_value, downpayment, fixed
 
 
 def liquidity_selling_ui(df, downpayment, fixed):
     st.markdown("### Liquidity when selling the house")
-    include_savings = st.checkbox("Include saving from rent and monthly mortgage repayement?")
+    include_savings = st.checkbox(
+        "Include saving from rent and monthly mortgage repayement?"
+    )
+
     def add_trace(fig, df, filter, col_x, col_y, label):
         fig.add_trace(
             go.Scatter(
@@ -92,25 +102,50 @@ def liquidity_selling_ui(df, downpayment, fixed):
         at_loss_incl_monthly = df["Sales balance incl monthly"] < (downpayment + fixed)
         at_gain_incl_monhtly = df["Sales balance incl monthly"] > (downpayment + fixed)
 
-        fig4 = add_trace(fig4, df, at_gain_incl_monhtly, "month", "Sales balance incl monthly",
-                         "At gain - incl rent and mortgage")
-        fig4 = add_trace(fig4, df, at_loss_incl_monthly, "month", "Sales balance incl monthly",
-                         "At loss - incl rent and mortgage")
+        fig4 = add_trace(
+            fig4,
+            df,
+            at_gain_incl_monhtly,
+            "month",
+            "Sales balance incl monthly",
+            "At gain - incl rent and mortgage",
+        )
+        fig4 = add_trace(
+            fig4,
+            df,
+            at_loss_incl_monthly,
+            "month",
+            "Sales balance incl monthly",
+            "At loss - incl rent and mortgage",
+        )
 
-        break_even = df.loc[df["Sales balance incl monthly"].gt(downpayment + fixed).idxmax(), "month"]
+        break_even = df.loc[
+            df["Sales balance incl monthly"].gt(downpayment + fixed).idxmax(), "month"
+        ]
 
     else:
         at_loss = df["Sales balance"] < (downpayment + fixed)
         at_gain = df["Sales balance"] > (downpayment + fixed)
-        fig4 = add_trace(fig4, df, at_gain, "month", "Sales balance",
-                         "At gain - excl rent and mortgage")
-        fig4 = add_trace(fig4, df, at_loss, "month", "Sales balance",
-                         "At loss - excl rent and mortgage")
+        fig4 = add_trace(
+            fig4,
+            df,
+            at_gain,
+            "month",
+            "Sales balance",
+            "At gain - excl rent and mortgage",
+        )
+        fig4 = add_trace(
+            fig4,
+            df,
+            at_loss,
+            "month",
+            "Sales balance",
+            "At loss - excl rent and mortgage",
+        )
 
-        break_even = df.loc[df["Sales balance"].gt(downpayment + fixed).idxmax(), "month"]
-
-
-
+        break_even = df.loc[
+            df["Sales balance"].gt(downpayment + fixed).idxmax(), "month"
+        ]
 
     fig4.add_trace(
         go.Scatter(
